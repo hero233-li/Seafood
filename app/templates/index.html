@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinDebug Pro (最终完整版)</title>
+    <style>
+        /* ================= 基础变量与重置 ================= */
+        :root {
+            --primary: #1677ff;
+            --primary-hover: color-mix(in srgb, var(--primary), white 20%);
+            --sidebar-bg: #001529;
+            --bg-body: #f0f2f5;
+            --text-main: #333;
+            --border-color: #e5e7eb;
+            --success: #52c41a;
+            --danger: #ff4d4f;
+            --processing: #1677ff;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; }
+
+        /* ================= 侧边栏 ================= */
+        .sidebar { width: 256px; background-color: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { height: 64px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; background: #002140; }
+        .nav-menu { flex: 1; padding: 16px 0; }
+        .nav-item { display: flex; align-items: center; padding: 12px 24px; color: #a6adb4; text-decoration: none; cursor: pointer; transition: 0.3s; margin-bottom: 4px; }
+        .nav-item:hover { color: white; background: rgba(255,255,255,0.1); }
+        .nav-item.active { background: var(--primary); color: white; border-right: 4px solid #fff; }
+        .nav-icon { margin-right: 10px; font-size: 16px; }
+
+        /* ================= 主内容区 ================= */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .header { height: 64px; background: white; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; padding: 0 24px; flex-shrink: 0; }
+        .content-scroll { flex: 1; overflow-y: auto; padding: 24px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        /* 视图切换控制 */
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ================= 卡片与布局 ================= */
+        .card { background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 24px; overflow: hidden; }
+        .card-header { padding: 16px 24px; border-bottom: 1px solid #f0f0f0; font-weight: 600; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .card-body { padding: 24px; }
+
+        .form-grid { display: flex; flex-wrap: wrap; gap: 24px; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+        .label { font-size: 14px; font-weight: 500; color: #1f2937; }
+
+        /* 输入框样式 */
+        .input, .select { height: 36px; padding: 0 12px; border: 1px solid #d9d9d9; border-radius: 6px; width: 100%; outline: none; transition: 0.2s; font-size: 14px; }
+        .input:focus, .select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1); }
+
+        /* Switch 开关 */
+        .switch-wrapper { display: flex; align-items: center; height: 36px; }
+        .switch-label { position: relative; display: inline-block; width: 44px; height: 22px; margin-right: 8px; vertical-align: middle; }
+        .switch-label input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .switch-label input:checked + .slider { background-color: var(--primary); }
+        .switch-label input:checked + .slider:before { transform: translateX(22px); }
+
+        /* 按钮 */
+        .btn-submit { background: var(--primary); color: white; border: none; padding: 8px 24px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 14px; min-width: 120px; justify-content: center; }
+        .btn-submit:hover { background: var(--primary-hover); }
+        .btn-submit.running { background: var(--processing); opacity: 1; cursor: wait; }
+        .btn-submit.running:hover { background: var(--danger) !important; cursor: pointer; }
+
+        /* ================= 表格与状态 ================= */
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 14px 16px; background: #fafafa; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: #666; white-space: nowrap; }
+        td { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: #333; }
+        .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; border: 1px solid transparent; }
+        .status-processing { color: var(--processing); background: #e6f7ff; border-color: #91caff; }
+        .status-success { color: var(--success); background: #f6ffed; border-color: #b7eb8f; }
+        .status-stopped { color: var(--danger); background: #fff1f0; border-color: #ffa39e; }
+        .status-error { color: #fff; background: var(--danger); }
+
+        /* 工具栏与分页 */
+        .toolbar { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+        .search-input { width: 300px; height: 36px; padding: 0 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; outline: none; }
+        .search-btn { height: 36px; padding: 0 16px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; }
+
+        .pagination { display: flex; justify-content: flex-end; align-items: center; padding: 16px 24px; gap: 10px; font-size: 13px; color: #666; }
+        .page-btn { padding: 4px 12px; border: 1px solid #d9d9d9; background: white; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; background: #f5f5f5; }
+        .page-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+        .page-size-select { padding: 4px 8px; border: 1px solid #d9d9d9; border-radius: 4px; outline: none; }
+
+        /* ================= 详情抽屉 ================= */
+        .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 90; display: none; }
+        .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 700px; background: #f5f7fa; z-index: 100; transform: translateX(100%); transition: 0.3s; display: flex; flex-direction: column; box-shadow: -4px 0 16px rgba(0,0,0,0.1); }
+        .drawer.open { transform: translateX(0); }
+        .drawer-overlay.open { display: block; }
+        .detail-header { background: white; padding: 32px 40px; border-bottom: 1px solid #e8e8e8; }
+
+        /* 进度条 Stepper */
+        .stepper { display: flex; justify-content: space-between; position: relative; }
+        .step-item { position: relative; z-index: 2; text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .step-dot { width: 14px; height: 14px; background: white; border-radius: 50%; margin-bottom: 12px; border: 2px solid #e8e8e8; transition: 0.3s; position: relative; z-index: 2; }
+        .step-title { font-size: 14px; color: #999; font-weight: 500; margin-bottom: 4px; }
+        .step-user { font-size: 12px; color: #666; }
+        .step-time { font-size: 12px; color: #bbb; margin-top: 2px; }
+        .step-line { position: absolute; top: 7px; left: 50%; width: 100%; height: 2px; background: #e8e8e8; z-index: 1; }
+        .step-item:last-child .step-line { display: none; }
+
+        .step-item.active .step-dot { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 0 3px rgba(22,119,255,0.2); transform: scale(1.1); }
+        .step-item.active .step-title { color: #333; font-weight: bold; }
+        .step-item.finish .step-dot { background: white; border-color: var(--primary); }
+        .step-item.finish .step-dot::after { content:''; display:block; width:6px; height:6px; background:var(--primary); border-radius:50%; position:absolute; top:2px; left:2px; }
+        .step-item.finish .step-title { color: #333; }
+        .step-item.finish .step-line { background: var(--primary); }
+
+        /* 详情信息 Grid */
+        .info-card { background: white; margin: 20px; border-radius: 8px; padding: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .info-title { font-size: 16px; font-weight: bold; margin-bottom: 24px; color: #333; border-left: 4px solid var(--primary); padding-left: 12px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 40px; }
+        .info-item { display: flex; }
+        .info-label { width: 100px; color: #888; font-size: 14px; }
+        .info-value { flex: 1; color: #333; font-size: 14px; font-weight: 500; word-break: break-all; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">FinDebug</div>
+        <nav class="nav-menu">
+            <div class="nav-item active" onclick="switchView('dashboard', this)">
+                <span class="nav-icon">📊</span> 贷款进件模拟
+            </div>
+            <div class="nav-item" onclick="switchView('history', this)">
+                <span class="nav-icon">📜</span> 历史记录查询
+            </div>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+        <header class="header">
+            <h2 id="page-title" style="font-size:18px;">仪表盘</h2>
+        </header>
+
+        <main class="content-scroll">
+
+            <!-- 视图1: 仪表盘 (Dashboard) -->
+            <div id="view-dashboard" class="view-section active">
+                <div class="container">
+                    <!-- 动态表单卡片 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span>贷款进件流程 (动态配置)</span>
+                            <span style="font-size:12px; color:#999; font-weight:normal;">表单项由后端定义</span>
+                        </div>
+                        <div class="card-body">
+                            <!-- 加载 Loading -->
+                            <div id="form-loading" style="text-align:center; padding: 20px; display:none; color:#666;">
+                                <svg class="spin" style="width:16px;margin-right:8px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>
+                                加载表单配置中...
+                            </div>
+                            <!-- 表单渲染区 -->
+                            <div class="form-grid" id="loan-form-container"></div>
+
+                            <div style="margin-top:24px; text-align:right;">
+                                <button id="action-btn" class="btn-submit" onclick="handleAction()">
+                                    <span>▶ 提交并执行</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 本次会话记录 (带本地分页) -->
+                    <div class="card">
+                        <div class="card-header">本次会话记录</div>
+                        <div class="card-body" style="padding:0">
+                            <table id="current-record-table">
+                                <thead><tr><th>状态</th><th>申请人</th><th>申请时间</th><th>当前节点</th><th>操作</th></tr></thead>
+                                <tbody id="current-record-body"></tbody>
+                            </table>
+                            <!-- 本地分页控件 -->
+                            <div class="pagination" id="local-pagination">
+                                <span>共 <span id="local-total-count">0</span> 条</span>
+                                <button class="page-btn" onclick="DashboardManager.prevPage()">上一页</button>
+                                <span>第 <span id="local-current-page">1</span> 页</span>
+                                <button class="page-btn" onclick="DashboardManager.nextPage()">下一页</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 视图2: 历史记录 (History) -->
+            <div id="view-history" class="view-section">
+                <div class="container">
+                    <div class="card">
+                        <div class="card-header">所有历史执行记录</div>
+                        <div class="card-body">
+                            <!-- 搜索工具栏 -->
+                            <div class="toolbar">
+                                <input type="text" id="history-search" class="search-input" placeholder="输入申请人姓名或受理单号...">
+                                <button class="search-btn" onclick="HistoryManager.loadData(1)">查询</button>
+                            </div>
+
+                            <!-- 历史表格 -->
+                            <table>
+                                <thead><tr><th>状态</th><th>受理单号</th><th>申请人</th><th>申请金额</th><th>开始时间</th><th>操作</th></tr></thead>
+                                <tbody id="history-table-body">
+                                    <tr><td colspan="6" style="text-align:center;padding:20px;color:#999;">请点击查询获取数据</td></tr>
+                                </tbody>
+                            </table>
+
+                            <!-- 服务端分页控件 -->
+                            <div class="pagination">
+                                <span>共 <span id="total-count">0</span> 条</span>
+                                <select id="page-size-select" class="page-size-select" onchange="HistoryManager.changeSize(this.value)">
+                                    <option value="5">5条/页</option>
+                                    <option value="10" selected>10条/页</option>
+                                    <option value="20">20条/页</option>
+                                </select>
+                                <button class="page-btn" onclick="HistoryManager.prevPage()">上一页</button>
+                                <span>第 <span id="current-page">1</span> 页</span>
+                                <button class="page-btn" onclick="HistoryManager.nextPage()">下一页</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- 详情抽屉 (通用) -->
+    <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+    <div class="drawer" id="drawer">
+        <div class="detail-header">
+            <h3 style="margin-bottom: 24px; font-size: 16px; color:#333;">流程进度</h3>
+            <div id="drawer-stepper" class="stepper"></div>
+        </div>
+        <div style="flex: 1; overflow-y: auto;">
+            <div class="info-card">
+                <div class="info-title">用户详细信息</div>
+                <div id="drawer-info-grid" class="info-grid"></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // ================= 1. API 服务层 (真实调用) =================
+    const ApiService = {
+        async submit(formData) {
+            const res = await fetch('/api/loan/apply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            return await res.json();
+        },
+        async pollStatus(taskId) {
+            const res = await fetch(`/api/status?taskId=${taskId}`);
+            return await res.json();
+        },
+        async stop(taskId) {
+            await fetch('/api/stop', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ taskId })
+            });
+        },
+        async getHistory(page, size, keyword) {
+            const res = await fetch(`/api/history?page=${page}&size=${size}&keyword=${encodeURIComponent(keyword)}`);
+            return await res.json();
+        },
+        // 【动态表单配置】
+        async getFormConfig() {
+            // 在真实项目中，这里应调用 fetch('/api/form/config')
+            // 为了便于演示，使用 Promise 模拟后端返回配置
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve([
+                        { name: 'name', label: '用户姓名', type: 'text', width: '30%', defaultValue: '付小小' },
+                        { name: 'idCard', label: '身份证号', type: 'text', width: '30%', defaultValue: '3321944288191034921' },
+                        { name: 'mobile', label: '联系方式', type: 'text', width: '30%', defaultValue: '18112345678' },
+                        { name: 'address', label: '联系地址', type: 'text', width: '100%', defaultValue: '浙江省杭州市西湖区黄姑山路工专路交叉口' },
+                        { name: 'amount', label: '申请金额', type: 'number', width: '30%', defaultValue: 50000 },
+                        { name: 'terms', label: '分期期数', type: 'select', width: '30%', options: ['12期', '24期', '36期'] },
+                        { name: 'isUrgent', label: '加急处理', type: 'switch', width: '30%', defaultValue: true }
+                    ]);
+                }, 300);
+            });
+        }
+    };
+
+    // ================= 2. 视图管理 =================
+    function switchView(viewName, navEl) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        if(navEl) navEl.classList.add('active');
+
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById(`view-${viewName}`).classList.add('active');
+
+        document.getElementById('page-title').textContent = viewName === 'dashboard' ? '仪表盘' : '历史记录查询';
+
+        if(viewName === 'history') {
+            HistoryManager.loadData(1);
+        }
+    }
+
+    // ================= 3. 仪表盘管理器 (动态表单+本地分页) =================
+    const DashboardManager = {
+        formData: {},
+        records: [], // 本次会话的所有记录
+        intervalId: null,
+        currentTaskId: null,
+        formConfig: [],
+
+        pagination: { currentPage: 1, pageSize: 5 },
+
+        async init() {
+            document.getElementById('form-loading').style.display = 'block';
+            try {
+                this.formConfig = await ApiService.getFormConfig();
+                this.renderForm();
+            } finally {
+                document.getElementById('form-loading').style.display = 'none';
+            }
+            this.renderTable();
+        },
+
+        renderForm() {
+            const container = document.getElementById('loan-form-container');
+            this.formConfig.forEach(f => {
+                if(this.formData[f.name] === undefined) this.formData[f.name] = f.defaultValue !== undefined ? f.defaultValue : '';
+            });
+
+            container.innerHTML = this.formConfig.map(f => {
+                let input = '';
+                if (f.type === 'select') {
+                    input = `<select class="select" onchange="DashboardManager.formData['${f.name}']=this.value">${f.options.map(o=>`<option>${o}</option>`).join('')}</select>`;
+                } else if (f.type === 'switch') {
+                    const isChecked = !!this.formData[f.name];
+                    input = `<div class="switch-wrapper"><label class="switch-label"><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="DashboardManager.formData['${f.name}']=this.checked"><span class="slider"></span></label></div>`;
+                } else {
+                    input = `<input class="input" type="${f.type}" value="${this.formData[f.name]}" oninput="DashboardManager.formData['${f.name}']=this.value">`;
+                }
+                return `<div class="form-group" style="width: ${f.width}"><label class="label">${f.label}</label>${input}</div>`;
+            }).join('');
+        },
+
+        async startTask() {
+            try {
+                const res = await ApiService.submit(this.formData);
+                this.currentTaskId = res.taskId;
+
+                const record = {
+                    id: this.currentTaskId,
+                    formData: {...this.formData},
+                    status: 'PROCESSING',
+                    currentStepIndex: 0,
+                    steps: [], displayInfo: {}, startTime: new Date()
+                };
+                // 新任务插到最前
+                this.records.unshift(record);
+                // 自动跳回第一页
+                this.pagination.currentPage = 1;
+
+                this.renderTable();
+                this.renderButtonState();
+
+                this.executePoll(this.currentTaskId);
+                this.intervalId = setInterval(() => this.executePoll(this.currentTaskId), 1000);
+            } catch (e) {
+                alert('提交失败: ' + e);
+            }
+        },
+
+        async executePoll(taskId) {
+            const data = await ApiService.pollStatus(taskId);
+            if (data && data.code === 200) {
+                const rec = this.records.find(r => r.id === taskId);
+                if (rec) {
+                    rec.status = data.status;
+                    rec.currentStepIndex = data.currentStepIndex;
+                    if (data.steps) rec.steps = data.steps;
+                    if (data.displayInfo) rec.displayInfo = data.displayInfo;
+
+                    this.renderTable();
+                    // 如果抽屉打开，实时更新抽屉
+                    const drawer = document.getElementById('drawer');
+                    if (drawer.classList.contains('open') && drawer.dataset.recordId === taskId) {
+                        renderDrawerContent(rec);
+                    }
+
+                    if (data.status !== 'PROCESSING') this.stopPolling();
+                }
+            }
+        },
+
+        stopPolling() {
+            if (this.intervalId) { clearInterval(this.intervalId); this.intervalId = null; }
+            this.currentTaskId = null;
+            this.renderButtonState();
+        },
+
+        async manualStop() {
+            if (this.currentTaskId && confirm('确定要终止当前交易吗？')) {
+                await ApiService.stop(this.currentTaskId);
+            }
+        },
+
+        renderButtonState() {
+            const btn = document.getElementById('action-btn');
+            if (this.currentTaskId) {
+                btn.classList.add('running');
+                btn.innerHTML = `<svg class="spin" style="width:14px;margin-right:5px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> 执行中...`;
+                btn.onmouseenter = () => { btn.innerHTML = `⛔ 点击停止`; };
+                btn.onmouseleave = () => { btn.innerHTML = `<svg class="spin" style="width:14px;margin-right:5px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> 执行中...`; };
+                btn.onclick = () => this.manualStop();
+            } else {
+                btn.classList.remove('running');
+                btn.innerHTML = `<span>▶ 提交并执行</span>`;
+                btn.onmouseenter = null; btn.onmouseleave = null;
+                btn.onclick = () => this.startTask();
+            }
+        },
+
+        // --- 本地分页逻辑 ---
+        renderTable() {
+            const tbody = document.getElementById('current-record-body');
+            const { currentPage, pageSize } = this.pagination;
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageData = this.records.slice(start, end);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#999;">暂无会话记录</td></tr>';
+            } else {
+                tbody.innerHTML = pageData.map(r => this.createRowHtml(r)).join('');
+            }
+            this.renderPaginationControls();
+        },
+
+        renderPaginationControls() {
+            document.getElementById('local-total-count').textContent = this.records.length;
+            document.getElementById('local-current-page').textContent = this.pagination.currentPage;
+
+            const maxPage = Math.ceil(this.records.length / this.pagination.pageSize) || 1;
+            const btns = document.querySelectorAll('#local-pagination .page-btn');
+            btns[0].disabled = (this.pagination.currentPage <= 1);
+            btns[1].disabled = (this.pagination.currentPage >= maxPage);
+        },
+
+        prevPage() {
+            if (this.pagination.currentPage > 1) {
+                this.pagination.currentPage--;
+                this.renderTable();
+            }
+        },
+
+        nextPage() {
+            const maxPage = Math.ceil(this.records.length / this.pagination.pageSize);
+            if (this.pagination.currentPage < maxPage) {
+                this.pagination.currentPage++;
+                this.renderTable();
+            }
+        },
+
+        createRowHtml(r) {
+            let statusBadge = '';
+            let currentNode = (r.steps && r.steps[r.currentStepIndex]) ? r.steps[r.currentStepIndex].title : '初始化...';
+
+            if (r.status === 'PROCESSING') statusBadge = `<span class="status-badge status-processing">执行中</span>`;
+            else if (r.status === 'SUCCESS') { statusBadge = `<span class="status-badge status-success">已完成</span>`; currentNode = '结束'; }
+            else statusBadge = `<span class="status-badge status-stopped">已停止</span>`;
+
+            const timeStr = new Date(r.startTime).toLocaleTimeString();
+
+            return `<tr>
+                <td>${statusBadge}</td>
+                <td>${r.formData.name || r.displayInfo?.['用户姓名'] || '-'}</td>
+                <td>${timeStr}</td>
+                <td>${currentNode}</td>
+                <td><a href="javascript:;" onclick="openDrawer('${r.id}')" style="color:var(--primary); text-decoration:none;">查看详情</a></td>
+            </tr>`;
+        }
+    };
+
+    // ================= 4. 历史记录管理器 (服务端分页) =================
+    const HistoryManager = {
+        currentPage: 1,
+        pageSize: 10,
+        total: 0,
+        data: [],
+
+        async loadData(page) {
+            this.currentPage = page || this.currentPage;
+            const keyword = document.getElementById('history-search').value;
+
+            const btn = document.querySelector('.search-btn');
+            const originalText = btn.textContent;
+            btn.textContent = '...'; btn.disabled = true;
+
+            try {
+                const res = await ApiService.getHistory(this.currentPage, this.pageSize, keyword);
+                if (res.code === 200) {
+                    this.data = res.data.items;
+                    this.total = res.data.total;
+                    this.renderTable();
+                    this.renderPagination();
+                }
+            } finally {
+                btn.textContent = originalText; btn.disabled = false;
+            }
+        },
+
+        changeSize(size) {
+            this.pageSize = parseInt(size);
+            this.loadData(1);
+        },
+
+        prevPage() {
+            if (this.currentPage > 1) this.loadData(this.currentPage - 1);
+        },
+
+        nextPage() {
+            const maxPage = Math.ceil(this.total / this.pageSize);
+            if (this.currentPage < maxPage) this.loadData(this.currentPage + 1);
+        },
+
+        renderTable() {
+            const tbody = document.getElementById('history-table-body');
+            if (this.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;padding:20px;">暂无历史数据</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = this.data.map(r => {
+                let statusBadge = '';
+                if (r.status === 'PROCESSING') statusBadge = `<span class="status-badge status-processing">执行中</span>`;
+                else if (r.status === 'SUCCESS') statusBadge = `<span class="status-badge status-success">已完成</span>`;
+                else statusBadge = `<span class="status-badge status-stopped">已停止</span>`;
+
+                const name = r.displayInfo?.['用户姓名'] || r.data?.name || '-';
+                const amount = r.displayInfo?.['申请金额'] || r.data?.amount || '-';
+                // Python timestamp to Date
+                const timeStr = new Date(r.startTime * 1000).toLocaleString();
+
+                return `<tr>
+                    <td>${statusBadge}</td>
+                    <td style="font-family:monospace;">${r.taskId}</td>
+                    <td>${name}</td>
+                    <td>${amount}</td>
+                    <td style="color:#666;font-size:12px;">${timeStr}</td>
+                    <td><a href="javascript:;" onclick="openDrawer('${r.taskId}', true)" style="color:var(--primary); text-decoration:none;">查看详情</a></td>
+                </tr>`;
+            }).join('');
+        },
+
+        renderPagination() {
+            document.getElementById('total-count').textContent = this.total;
+            document.getElementById('current-page').textContent = this.currentPage;
+
+            const maxPage = Math.ceil(this.total / this.pageSize) || 1;
+            const btns = document.querySelectorAll('.pagination:not(#local-pagination) .page-btn');
+            btns[0].disabled = (this.currentPage <= 1);
+            btns[1].disabled = (this.currentPage >= maxPage);
+        }
+    };
+
+    // ================= 5. 详情抽屉 (通用) =================
+    async function openDrawer(recordId, fromHistory = false) {
+        let record;
+        if (fromHistory) {
+            // 历史记录需要查一次最新全量状态
+            const res = await ApiService.pollStatus(recordId);
+            if (res.code === 200) {
+                record = {
+                    status: res.status,
+                    steps: res.steps,
+                    currentStepIndex: res.currentStepIndex,
+                    displayInfo: res.displayInfo
+                };
+            } else {
+                alert('获取详情失败'); return;
+            }
+        } else {
+            record = DashboardManager.records.find(r => r.id === recordId);
+        }
+
+        if (!record) return;
+
+        const drawer = document.getElementById('drawer');
+        drawer.dataset.recordId = recordId;
+        renderDrawerContent(record);
+        document.getElementById('drawer-overlay').classList.add('open');
+        drawer.classList.add('open');
+    }
+
+    function closeDrawer() {
+        document.getElementById('drawer-overlay').classList.remove('open');
+        document.getElementById('drawer').classList.remove('open');
+        document.getElementById('drawer').dataset.recordId = '';
+    }
+
+    function renderDrawerContent(record) {
+        const stepperContainer = document.getElementById('drawer-stepper');
+        const infoGrid = document.getElementById('drawer-info-grid');
+
+        // 渲染进度条
+        if (!record.steps || record.steps.length === 0) {
+            stepperContainer.innerHTML = '<div style="text-align:center;width:100%;color:#999;padding:20px;">数据加载中...</div>';
+        } else {
+            const totalSteps = record.steps.length;
+            stepperContainer.innerHTML = record.steps.map((step, index) => {
+                let statusClass = '';
+                if (record.status === 'SUCCESS') {
+                    statusClass = 'finish';
+                } else {
+                    if (index < record.currentStepIndex) statusClass = 'finish';
+                    else if (index === record.currentStepIndex) statusClass = 'active';
+                }
+
+                let lineStyle = '';
+                if (index < totalSteps - 1) {
+                    const isLineActive = (index < record.currentStepIndex) || (record.status === 'SUCCESS');
+                    lineStyle = `background: ${isLineActive ? '#1677ff' : '#e8e8e8'}`;
+                }
+
+                return `
+                    <div class="step-item ${statusClass}">
+                        <div class="step-line" style="${lineStyle}"></div>
+                        <div class="step-dot"></div>
+                        <div class="step-title">${step.title}</div>
+                        <div class="step-user">${step.user}</div>
+                        <div class="step-time">${index <= record.currentStepIndex ? '已流转' : ''}</div>
+                    </div>`;
+            }).join('');
+        }
+
+        // 渲染详情键值对
+        if (!record.displayInfo) {
+            infoGrid.innerHTML = '';
+        } else {
+            infoGrid.innerHTML = Object.keys(record.displayInfo).map(key => {
+                return `<div class="info-item"><div class="info-label">${key}：</div><div class="info-value">${record.displayInfo[key]}</div></div>`;
+            }).join('');
+        }
+    }
+
+    // 启动
+    DashboardManager.init();
+
+    // 绑定全局动作
+    window.handleAction = () => {
+        if (DashboardManager.currentTaskId) DashboardManager.manualStop();
+        else DashboardManager.startTask();
+    };
+    window.switchView = switchView;
+    window.HistoryManager = HistoryManager;
+    window.DashboardManager = DashboardManager;
+
+</script>
+</body>
+</html>
