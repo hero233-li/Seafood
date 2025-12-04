@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinDebug Pro (最终完整版)</title>
+    <title>FinDebug Pro (配置化+分页完整版)</title>
     <style>
-        /* ================= 基础变量与重置 ================= */
+        /* ================= 样式保持不变 (源自 index222) ================= */
         :root {
             --primary: #1677ff;
             --primary-hover: color-mix(in srgb, var(--primary), white 20%);
@@ -20,7 +20,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; }
 
-        /* ================= 侧边栏 ================= */
         .sidebar { width: 256px; background-color: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { height: 64px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; background: #002140; }
         .nav-menu { flex: 1; padding: 16px 0; }
@@ -29,18 +28,11 @@
         .nav-item.active { background: var(--primary); color: white; border-right: 4px solid #fff; }
         .nav-icon { margin-right: 10px; font-size: 16px; }
 
-        /* ================= 主内容区 ================= */
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .header { height: 64px; background: white; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; padding: 0 24px; flex-shrink: 0; }
         .content-scroll { flex: 1; overflow-y: auto; padding: 24px; }
         .container { max-width: 1200px; margin: 0 auto; }
 
-        /* 视图切换控制 */
-        .view-section { display: none; }
-        .view-section.active { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* ================= 卡片与布局 ================= */
         .card { background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 24px; overflow: hidden; }
         .card-header { padding: 16px 24px; border-bottom: 1px solid #f0f0f0; font-weight: 600; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
         .card-body { padding: 24px; }
@@ -48,12 +40,9 @@
         .form-grid { display: flex; flex-wrap: wrap; gap: 24px; }
         .form-group { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
         .label { font-size: 14px; font-weight: 500; color: #1f2937; }
-
-        /* 输入框样式 */
         .input, .select { height: 36px; padding: 0 12px; border: 1px solid #d9d9d9; border-radius: 6px; width: 100%; outline: none; transition: 0.2s; font-size: 14px; }
         .input:focus, .select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1); }
 
-        /* Switch 开关 */
         .switch-wrapper { display: flex; align-items: center; height: 36px; }
         .switch-label { position: relative; display: inline-block; width: 44px; height: 22px; margin-right: 8px; vertical-align: middle; }
         .switch-label input { opacity: 0; width: 0; height: 0; }
@@ -62,13 +51,11 @@
         .switch-label input:checked + .slider { background-color: var(--primary); }
         .switch-label input:checked + .slider:before { transform: translateX(22px); }
 
-        /* 按钮 */
         .btn-submit { background: var(--primary); color: white; border: none; padding: 8px 24px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 14px; min-width: 120px; justify-content: center; }
         .btn-submit:hover { background: var(--primary-hover); }
         .btn-submit.running { background: var(--processing); opacity: 1; cursor: wait; }
         .btn-submit.running:hover { background: var(--danger) !important; cursor: pointer; }
 
-        /* ================= 表格与状态 ================= */
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 14px 16px; background: #fafafa; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: #666; white-space: nowrap; }
         td { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; color: #333; }
@@ -76,9 +63,8 @@
         .status-processing { color: var(--processing); background: #e6f7ff; border-color: #91caff; }
         .status-success { color: var(--success); background: #f6ffed; border-color: #b7eb8f; }
         .status-stopped { color: var(--danger); background: #fff1f0; border-color: #ffa39e; }
-        .status-error { color: #fff; background: var(--danger); }
 
-        /* 工具栏与分页 */
+        /* 增加工具栏与分页样式 */
         .toolbar { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
         .search-input { width: 300px; height: 36px; padding: 0 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; outline: none; }
         .search-btn { height: 36px; padding: 0 16px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; }
@@ -89,14 +75,12 @@
         .page-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
         .page-size-select { padding: 4px 8px; border: 1px solid #d9d9d9; border-radius: 4px; outline: none; }
 
-        /* ================= 详情抽屉 ================= */
         .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 90; display: none; }
         .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 700px; background: #f5f7fa; z-index: 100; transform: translateX(100%); transition: 0.3s; display: flex; flex-direction: column; box-shadow: -4px 0 16px rgba(0,0,0,0.1); }
         .drawer.open { transform: translateX(0); }
         .drawer-overlay.open { display: block; }
         .detail-header { background: white; padding: 32px 40px; border-bottom: 1px solid #e8e8e8; }
 
-        /* 进度条 Stepper */
         .stepper { display: flex; justify-content: space-between; position: relative; }
         .step-item { position: relative; z-index: 2; text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; }
         .step-dot { width: 14px; height: 14px; background: white; border-radius: 50%; margin-bottom: 12px; border: 2px solid #e8e8e8; transition: 0.3s; position: relative; z-index: 2; }
@@ -113,7 +97,6 @@
         .step-item.finish .step-title { color: #333; }
         .step-item.finish .step-line { background: var(--primary); }
 
-        /* 详情信息 Grid */
         .info-card { background: white; margin: 20px; border-radius: 8px; padding: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .info-title { font-size: 16px; font-weight: bold; margin-bottom: 24px; color: #333; border-left: 4px solid var(--primary); padding-left: 12px; }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 40px; }
@@ -126,14 +109,7 @@
 
     <aside class="sidebar">
         <div class="sidebar-header">FinDebug</div>
-        <nav class="nav-menu">
-            <div class="nav-item active" onclick="switchView('dashboard', this)">
-                <span class="nav-icon">📊</span> 贷款进件模拟
-            </div>
-            <div class="nav-item" onclick="switchView('history', this)">
-                <span class="nav-icon">📜</span> 历史记录查询
-            </div>
-        </nav>
+        <nav class="nav-menu" id="nav-menu"></nav>
     </aside>
 
     <div class="main-content">
@@ -141,96 +117,10 @@
             <h2 id="page-title" style="font-size:18px;">仪表盘</h2>
         </header>
 
-        <main class="content-scroll">
-
-            <!-- 视图1: 仪表盘 (Dashboard) -->
-            <div id="view-dashboard" class="view-section active">
-                <div class="container">
-                    <!-- 动态表单卡片 -->
-                    <div class="card">
-                        <div class="card-header">
-                            <span>贷款进件流程 (动态配置)</span>
-                            <span style="font-size:12px; color:#999; font-weight:normal;">表单项由后端定义</span>
-                        </div>
-                        <div class="card-body">
-                            <!-- 加载 Loading -->
-                            <div id="form-loading" style="text-align:center; padding: 20px; display:none; color:#666;">
-                                <svg class="spin" style="width:16px;margin-right:8px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>
-                                加载表单配置中...
-                            </div>
-                            <!-- 表单渲染区 -->
-                            <div class="form-grid" id="loan-form-container"></div>
-
-                            <div style="margin-top:24px; text-align:right;">
-                                <button id="action-btn" class="btn-submit" onclick="handleAction()">
-                                    <span>▶ 提交并执行</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 本次会话记录 (带本地分页) -->
-                    <div class="card">
-                        <div class="card-header">本次会话记录</div>
-                        <div class="card-body" style="padding:0">
-                            <table id="current-record-table">
-                                <thead><tr><th>状态</th><th>申请人</th><th>申请时间</th><th>当前节点</th><th>操作</th></tr></thead>
-                                <tbody id="current-record-body"></tbody>
-                            </table>
-                            <!-- 本地分页控件 -->
-                            <div class="pagination" id="local-pagination">
-                                <span>共 <span id="local-total-count">0</span> 条</span>
-                                <button class="page-btn" onclick="DashboardManager.prevPage()">上一页</button>
-                                <span>第 <span id="local-current-page">1</span> 页</span>
-                                <button class="page-btn" onclick="DashboardManager.nextPage()">下一页</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 视图2: 历史记录 (History) -->
-            <div id="view-history" class="view-section">
-                <div class="container">
-                    <div class="card">
-                        <div class="card-header">所有历史执行记录</div>
-                        <div class="card-body">
-                            <!-- 搜索工具栏 -->
-                            <div class="toolbar">
-                                <input type="text" id="history-search" class="search-input" placeholder="输入申请人姓名或受理单号...">
-                                <button class="search-btn" onclick="HistoryManager.loadData(1)">查询</button>
-                            </div>
-
-                            <!-- 历史表格 -->
-                            <table>
-                                <thead><tr><th>状态</th><th>受理单号</th><th>申请人</th><th>申请金额</th><th>开始时间</th><th>操作</th></tr></thead>
-                                <tbody id="history-table-body">
-                                    <tr><td colspan="6" style="text-align:center;padding:20px;color:#999;">请点击查询获取数据</td></tr>
-                                </tbody>
-                            </table>
-
-                            <!-- 服务端分页控件 -->
-                            <div class="pagination">
-                                <span>共 <span id="total-count">0</span> 条</span>
-                                <select id="page-size-select" class="page-size-select" onchange="HistoryManager.changeSize(this.value)">
-                                    <option value="5">5条/页</option>
-                                    <option value="10" selected>10条/页</option>
-                                    <option value="20">20条/页</option>
-                                </select>
-                                <button class="page-btn" onclick="HistoryManager.prevPage()">上一页</button>
-                                <span>第 <span id="current-page">1</span> 页</span>
-                                <button class="page-btn" onclick="HistoryManager.nextPage()">下一页</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </main>
+        <main class="content-scroll" id="main-container"></main>
     </div>
 
-    <!-- 详情抽屉 (通用) -->
-    <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+    <div class="drawer-overlay" id="drawer-overlay" onclick="App.closeDrawer()"></div>
     <div class="drawer" id="drawer">
         <div class="detail-header">
             <h3 style="margin-bottom: 24px; font-size: 16px; color:#333;">流程进度</h3>
@@ -245,418 +135,521 @@
     </div>
 
 <script>
-    // ================= 1. API 服务层 (真实调用) =================
+    // ================= 1. 配置数据 (NavConfig & Pages) =================
+    // 定义侧边栏导航
+    const NavConfig = [
+        { key: 'dashboard', title: '贷款进件模拟', icon: '📊', type: 'form' },
+        { key: 'history', title: '历史记录查询', icon: '📜', type: 'table' }
+    ];
+
+    // 定义页面具体配置
+    const PageConfigs = {
+        // 仪表盘配置 (表单 + 流程)
+        dashboard: {
+            title: '贷款进件流程',
+            desc: '配置化生成表单，支持本地会话记录分页。',
+            fields: [
+                { name: 'name', label: '用户姓名', type: 'text', width: '30%', defaultValue: '付小小' },
+                { name: 'idCard', label: '身份证号', type: 'text', width: '30%', defaultValue: '3321944288191034921' },
+                { name: 'mobile', label: '联系方式', type: 'text', width: '30%', defaultValue: '18112345678' },
+                { name: 'address', label: '联系地址', type: 'text', width: '100%', defaultValue: '浙江省杭州市西湖区黄姑山路工专路交叉口' },
+                { name: 'amount', label: '申请金额', type: 'number', width: '30%', defaultValue: 50000 },
+                { name: 'terms', label: '分期期数', type: 'select', width: '30%', options: ['12期', '24期', '36期'] },
+                { name: 'isUrgent', label: '加急处理', type: 'switch', width: '30%', defaultValue: true }
+            ],
+            workflow: [
+                { title: '创建项目', user: '曲丽丽' },
+                { title: '部门初审', user: '周毛毛' },
+                { title: '财务复核', user: '财务处' },
+                { title: '完成', user: '系统' }
+            ]
+        },
+        // 历史记录页配置 (仅作为占位，逻辑在 renderHistory 中)
+        history: {
+            title: '所有历史执行记录'
+        }
+    };
+
+    // ================= 2. 模拟后端 (MockBackend - 支持搜索与分页) =================
+    const MockBackend = {
+        tasks: {},     // 存活的任务
+        historyDB: [], // 历史数据库 (模拟持久化)
+
+        init() {
+            // 初始化生成 55 条历史假数据，用于测试分页
+            for(let i=0; i<55; i++) {
+                this.historyDB.push({
+                    taskId: 'H-2023-' + (1000+i),
+                    status: i%3===0 ? 'PROCESSING' : (i%5===0?'STOPPED':'SUCCESS'),
+                    formData: { name: '模拟用户'+i, amount: 10000 + i*100 },
+                    startTime: new Date(Date.now() - i * 3600000)
+                });
+            }
+        },
+
+        createTask(formData, workflow) {
+            const taskId = 'T-' + Math.floor(Math.random()*100000);
+            const task = {
+                taskId, formData, status: 'PROCESSING', stepIndex: 0, workflow, startTime: new Date()
+            };
+            this.tasks[taskId] = task;
+            this.historyDB.unshift(task); // 同时写入历史
+            this.runTaskBackground(taskId);
+            return taskId;
+        },
+
+        runTaskBackground(taskId) {
+            let task = this.tasks[taskId];
+            const totalSteps = task.workflow.length;
+            let timer = setInterval(() => {
+                if (!this.tasks[taskId] || this.tasks[taskId].status === 'STOPPED') { clearInterval(timer); return; }
+                if (task.stepIndex < totalSteps - 1) {
+                    task.stepIndex++;
+                } else {
+                    task.status = 'SUCCESS';
+                    clearInterval(timer);
+                }
+            }, 2000);
+        },
+
+        queryTask(taskId) {
+            // 优先查实时，没有查历史
+            return this.tasks[taskId] || this.historyDB.find(t=>t.taskId === taskId);
+        },
+
+        stopTask(taskId) {
+            if (this.tasks[taskId]) this.tasks[taskId].status = 'STOPPED';
+        },
+
+        // 模拟后端分页查询
+        searchHistory(page, size, keyword) {
+            let filtered = this.historyDB;
+            if(keyword) {
+                filtered = filtered.filter(item =>
+                    item.taskId.includes(keyword) ||
+                    item.formData.name.includes(keyword)
+                );
+            }
+            const total = filtered.length;
+            const start = (page - 1) * size;
+            const end = start + size;
+            const rows = filtered.slice(start, end);
+            return { total, rows };
+        }
+    };
+    MockBackend.init(); // 启动时填充假数据
+
+    // ================= 3. API 服务层 (纯 Promise 封装) =================
     const ApiService = {
-        async submit(formData) {
-            const res = await fetch('/api/loan/apply', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            return await res.json();
+        async submit(formData, workflow) {
+            return new Promise(resolve => setTimeout(() => resolve({ taskId: MockBackend.createTask(formData, workflow) }), 400));
         },
         async pollStatus(taskId) {
-            const res = await fetch(`/api/status?taskId=${taskId}`);
-            return await res.json();
-        },
-        async stop(taskId) {
-            await fetch('/api/stop', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ taskId })
+            return new Promise(resolve => {
+                const task = MockBackend.queryTask(taskId);
+                resolve({ status: task?.status, currentStepIndex: task?.stepIndex, steps: task?.workflow, formData: task?.formData });
             });
         },
-        async getHistory(page, size, keyword) {
-            const res = await fetch(`/api/history?page=${page}&size=${size}&keyword=${encodeURIComponent(keyword)}`);
-            return await res.json();
+        async stop(taskId) {
+            return new Promise(resolve => { MockBackend.stopTask(taskId); resolve(true); });
         },
-        // 【动态表单配置】
-        async getFormConfig() {
-            // 在真实项目中，这里应调用 fetch('/api/form/config')
-            // 为了便于演示，使用 Promise 模拟后端返回配置
+        async getHistory({ page, size, keyword }) {
             return new Promise(resolve => {
                 setTimeout(() => {
-                    resolve([
-                        { name: 'name', label: '用户姓名', type: 'text', width: '30%', defaultValue: '付小小' },
-                        { name: 'idCard', label: '身份证号', type: 'text', width: '30%', defaultValue: '3321944288191034921' },
-                        { name: 'mobile', label: '联系方式', type: 'text', width: '30%', defaultValue: '18112345678' },
-                        { name: 'address', label: '联系地址', type: 'text', width: '100%', defaultValue: '浙江省杭州市西湖区黄姑山路工专路交叉口' },
-                        { name: 'amount', label: '申请金额', type: 'number', width: '30%', defaultValue: 50000 },
-                        { name: 'terms', label: '分期期数', type: 'select', width: '30%', options: ['12期', '24期', '36期'] },
-                        { name: 'isUrgent', label: '加急处理', type: 'switch', width: '30%', defaultValue: true }
-                    ]);
-                }, 300);
+                    resolve(MockBackend.searchHistory(page, size, keyword));
+                }, 300); // 模拟网络延迟
             });
         }
     };
 
-    // ================= 2. 视图管理 =================
-    function switchView(viewName, navEl) {
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        if(navEl) navEl.classList.add('active');
+    // ================= 4. 全局状态管理 (State) =================
+    const State = {
+        currentNav: 'dashboard', // 当前选中的导航 dashboard | history
 
-        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-        document.getElementById(`view-${viewName}`).classList.add('active');
-
-        document.getElementById('page-title').textContent = viewName === 'dashboard' ? '仪表盘' : '历史记录查询';
-
-        if(viewName === 'history') {
-            HistoryManager.loadData(1);
-        }
-    }
-
-    // ================= 3. 仪表盘管理器 (动态表单+本地分页) =================
-    const DashboardManager = {
-        formData: {},
-        records: [], // 本次会话的所有记录
-        intervalId: null,
-        currentTaskId: null,
-        formConfig: [],
-
-        pagination: { currentPage: 1, pageSize: 5 },
-
-        async init() {
-            document.getElementById('form-loading').style.display = 'block';
-            try {
-                this.formConfig = await ApiService.getFormConfig();
-                this.renderForm();
-            } finally {
-                document.getElementById('form-loading').style.display = 'none';
-            }
-            this.renderTable();
+        // 仪表盘状态 (Dashboard)
+        dashboard: {
+            formData: {},
+            records: [], // 本地会话记录
+            pagination: { current: 1, size: 5 } // 本地分页配置
         },
 
-        renderForm() {
-            const container = document.getElementById('loan-form-container');
-            this.formConfig.forEach(f => {
-                if(this.formData[f.name] === undefined) this.formData[f.name] = f.defaultValue !== undefined ? f.defaultValue : '';
+        // 历史页状态 (History)
+        history: {
+            data: [],    // 列表数据
+            total: 0,
+            loading: false,
+            keyword: '',
+            pagination: { current: 1, size: 10 } // 服务端分页配置
+        }
+    };
+
+    // ================= 5. 核心控制器 (App Controller) =================
+    const App = {
+        pollingId: null,
+        currentTaskId: null,
+
+        init() {
+            this.renderSidebar();
+            this.switchNav('dashboard');
+        },
+
+        // 渲染侧边栏
+        renderSidebar() {
+            const navHtml = NavConfig.map(nav => `
+                <div class="nav-item ${nav.key === State.currentNav ? 'active' : ''}"
+                     onclick="App.switchNav('${nav.key}')">
+                    <span class="nav-icon">${nav.icon}</span> ${nav.title}
+                </div>
+            `).join('');
+            document.getElementById('nav-menu').innerHTML = navHtml;
+        },
+
+        // 切换导航
+        switchNav(key) {
+            State.currentNav = key;
+            this.renderSidebar(); // 更新高亮
+            document.getElementById('page-title').innerText = PageConfigs[key].title;
+
+            // 路由分发
+            const navItem = NavConfig.find(n => n.key === key);
+            const container = document.getElementById('main-container');
+
+            if (navItem.type === 'form') {
+                this.renderDashboard(container);
+            } else if (navItem.type === 'table') {
+                this.renderHistoryView(container);
+                this.loadHistoryData(); // 切过来时自动加载
+            }
+        },
+
+        // --- A. 渲染仪表盘 (Form + Local Table) ---
+        renderDashboard(container) {
+            const config = PageConfigs['dashboard'];
+            const { formData } = State.dashboard;
+
+            // 初始化默认值
+            config.fields.forEach(f => {
+                if (formData[f.name] === undefined) formData[f.name] = f.defaultValue;
             });
 
-            container.innerHTML = this.formConfig.map(f => {
+            // 生成表单 HTML
+            const formHtml = config.fields.map(f => {
                 let input = '';
                 if (f.type === 'select') {
-                    input = `<select class="select" onchange="DashboardManager.formData['${f.name}']=this.value">${f.options.map(o=>`<option>${o}</option>`).join('')}</select>`;
+                    input = `<select class="select" onchange="State.dashboard.formData['${f.name}']=this.value">${f.options.map(o=>`<option>${o}</option>`).join('')}</select>`;
                 } else if (f.type === 'switch') {
-                    const isChecked = !!this.formData[f.name];
-                    input = `<div class="switch-wrapper"><label class="switch-label"><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="DashboardManager.formData['${f.name}']=this.checked"><span class="slider"></span></label></div>`;
+                    input = `<div class="switch-wrapper"><label class="switch-label"><input type="checkbox" ${formData[f.name]?'checked':''} onchange="State.dashboard.formData['${f.name}']=this.checked"><span class="slider"></span></label></div>`;
                 } else {
-                    input = `<input class="input" type="${f.type}" value="${this.formData[f.name]}" oninput="DashboardManager.formData['${f.name}']=this.value">`;
+                    input = `<input class="input" type="${f.type}" value="${formData[f.name]}" oninput="State.dashboard.formData['${f.name}']=this.value">`;
                 }
-                return `<div class="form-group" style="width: ${f.width}"><label class="label">${f.label}</label>${input}</div>`;
+                return `<div class="form-group" style="width:${f.width}"><label class="label">${f.label}</label>${input}</div>`;
             }).join('');
+
+            container.innerHTML = `
+                <div class="container">
+                    <div class="card">
+                        <div class="card-header">${config.title}</div>
+                        <div class="card-body">
+                            <p style="color:#666;margin-bottom:20px;font-size:14px;">${config.desc}</p>
+                            <div class="form-grid">${formHtml}</div>
+                            <div style="margin-top:24px;text-align:right;">
+                                <button id="action-btn" class="btn-submit" onclick="App.handleDashboardAction()">
+                                    <span>▶ 提交并执行</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">本次会话记录</div>
+                        <div class="card-body" style="padding:0">
+                            <table id="dash-table"><thead><tr><th>状态</th><th>业务ID</th><th>申请人</th><th>开始时间</th><th>当前节点</th><th>操作</th></tr></thead><tbody id="dash-tbody"></tbody></table>
+                            <div class="pagination" id="dash-pagination"></div>
+                        </div>
+                    </div>
+                </div>`;
+
+            this.renderDashboardTable();
+            this.renderDashboardBtn();
         },
 
-        async startTask() {
-            try {
-                const res = await ApiService.submit(this.formData);
-                this.currentTaskId = res.taskId;
+        // 渲染仪表盘表格 (含本地分页逻辑)
+        renderDashboardTable() {
+            const tbody = document.getElementById('dash-tbody');
+            const pgContainer = document.getElementById('dash-pagination');
+            if(!tbody) return;
 
-                const record = {
-                    id: this.currentTaskId,
-                    formData: {...this.formData},
-                    status: 'PROCESSING',
-                    currentStepIndex: 0,
-                    steps: [], displayInfo: {}, startTime: new Date()
-                };
-                // 新任务插到最前
-                this.records.unshift(record);
-                // 自动跳回第一页
-                this.pagination.currentPage = 1;
+            const { records, pagination } = State.dashboard;
+            const start = (pagination.current - 1) * pagination.size;
+            const pageData = records.slice(start, start + pagination.size);
 
-                this.renderTable();
-                this.renderButtonState();
-
-                this.executePoll(this.currentTaskId);
-                this.intervalId = setInterval(() => this.executePoll(this.currentTaskId), 1000);
-            } catch (e) {
-                alert('提交失败: ' + e);
+            if(records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:#999">暂无记录</td></tr>';
+                pgContainer.innerHTML = '';
+            } else {
+                tbody.innerHTML = pageData.map(r => this.buildRow(r)).join('');
+                this.renderPaginationControl(pgContainer, pagination.current, records.length, pagination.size, (newPage) => {
+                    State.dashboard.pagination.current = newPage;
+                    this.renderDashboardTable();
+                });
             }
         },
 
-        async executePoll(taskId) {
-            const data = await ApiService.pollStatus(taskId);
-            if (data && data.code === 200) {
-                const rec = this.records.find(r => r.id === taskId);
-                if (rec) {
-                    rec.status = data.status;
-                    rec.currentStepIndex = data.currentStepIndex;
-                    if (data.steps) rec.steps = data.steps;
-                    if (data.displayInfo) rec.displayInfo = data.displayInfo;
+        // --- B. 渲染历史记录页 (Search + Server Table) ---
+        renderHistoryView(container) {
+            container.innerHTML = `
+                <div class="container">
+                    <div class="card">
+                        <div class="card-header">历史记录查询</div>
+                        <div class="card-body">
+                            <div class="toolbar">
+                                <input type="text" id="hist-search" class="search-input" placeholder="输入申请人姓名或业务ID..." value="${State.history.keyword}">
+                                <button class="search-btn" onclick="App.handleHistorySearch()">查询</button>
+                            </div>
 
-                    this.renderTable();
-                    // 如果抽屉打开，实时更新抽屉
-                    const drawer = document.getElementById('drawer');
-                    if (drawer.classList.contains('open') && drawer.dataset.recordId === taskId) {
-                        renderDrawerContent(rec);
-                    }
+                            <table>
+                                <thead><tr><th>状态</th><th>业务ID</th><th>申请人</th><th>开始时间</th><th>操作</th></tr></thead>
+                                <tbody id="hist-tbody"></tbody>
+                            </table>
 
-                    if (data.status !== 'PROCESSING') this.stopPolling();
-                }
+                            <div class="pagination" id="hist-pagination"></div>
+                        </div>
+                    </div>
+                </div>`;
+        },
+
+        async loadHistoryData() {
+            const tbody = document.getElementById('hist-tbody');
+            if(!tbody) return;
+
+            // Loading 状态
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;">加载中...</td></tr>';
+
+            const { pagination, keyword } = State.history;
+            const res = await ApiService.getHistory({
+                page: pagination.current,
+                size: pagination.size,
+                keyword
+            });
+
+            State.history.data = res.rows;
+            State.history.total = res.total;
+            this.renderHistoryTable();
+        },
+
+        renderHistoryTable() {
+            const tbody = document.getElementById('hist-tbody');
+            const pgContainer = document.getElementById('hist-pagination');
+            if(!tbody) return;
+
+            if(State.history.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#999">未找到匹配数据</td></tr>';
+            } else {
+                tbody.innerHTML = State.history.data.map(r => `
+                    <tr>
+                        <td>${this.getStatusBadge(r.status)}</td>
+                        <td style="font-family:monospace">${r.taskId}</td>
+                        <td>${r.formData.name || '-'}</td>
+                        <td>${new Date(r.startTime).toLocaleString()}</td>
+                        <td><a href="javascript:;" onclick="App.openDrawer('${r.taskId}', true)" style="color:var(--primary)">详情</a></td>
+                    </tr>
+                `).join('');
             }
+
+            // 渲染服务端分页控件
+            this.renderPaginationControl(pgContainer, State.history.pagination.current, State.history.total, State.history.pagination.size, (newPage) => {
+                State.history.pagination.current = newPage;
+                this.loadHistoryData();
+            });
+        },
+
+        handleHistorySearch() {
+            State.history.keyword = document.getElementById('hist-search').value;
+            State.history.pagination.current = 1; // 重置到第一页
+            this.loadHistoryData();
+        },
+
+        // --- 通用分页控件渲染器 ---
+        renderPaginationControl(container, current, total, size, onPageChange) {
+            const maxPage = Math.ceil(total / size) || 1;
+
+            // 为了把函数传给 onclick，我们需要挂载到 window 或者使用闭包绑定
+            // 这里使用一个简单技巧：重新绑定 global handler
+            window._tempPageHandler = onPageChange;
+
+            container.innerHTML = `
+                <span>共 ${total} 条</span>
+                <button class="page-btn" ${current<=1?'disabled':''} onclick="window._tempPageHandler(${current-1})">上一页</button>
+                <span>第 ${current} / ${maxPage} 页</span>
+                <button class="page-btn" ${current>=maxPage?'disabled':''} onclick="window._tempPageHandler(${current+1})">下一页</button>
+            `;
+        },
+
+        // --- 业务逻辑：提交与轮询 ---
+        async handleDashboardAction() {
+            if (this.currentTaskId) {
+                // 停止
+                if(confirm('确定停止当前任务？')) await ApiService.stop(this.currentTaskId);
+            } else {
+                // 提交
+                const config = PageConfigs['dashboard'];
+                const { formData } = State.dashboard;
+
+                try {
+                    const res = await ApiService.submit(formData, config.workflow);
+                    this.currentTaskId = res.taskId;
+
+                    // 添加本地记录
+                    const newRecord = {
+                        taskId: this.currentTaskId,
+                        formData: {...formData},
+                        status: 'PROCESSING',
+                        currentStepIndex: 0,
+                        steps: config.workflow,
+                        startTime: new Date()
+                    };
+                    State.dashboard.records.unshift(newRecord);
+                    State.dashboard.pagination.current = 1; // 回到第一页
+
+                    this.renderDashboardTable();
+                    this.renderDashboardBtn();
+                    this.startPolling(this.currentTaskId);
+                } catch(e) { alert('提交失败'); }
+            }
+        },
+
+        startPolling(taskId) {
+            if(this.pollingId) clearInterval(this.pollingId);
+            this.pollingId = setInterval(async () => {
+                const data = await ApiService.pollStatus(taskId);
+                this.updateLocalRecord(taskId, data);
+                if(data.status !== 'PROCESSING') this.stopPolling();
+            }, 1000);
         },
 
         stopPolling() {
-            if (this.intervalId) { clearInterval(this.intervalId); this.intervalId = null; }
+            if(this.pollingId) { clearInterval(this.pollingId); this.pollingId = null; }
             this.currentTaskId = null;
-            this.renderButtonState();
+            this.renderDashboardBtn();
         },
 
-        async manualStop() {
-            if (this.currentTaskId && confirm('确定要终止当前交易吗？')) {
-                await ApiService.stop(this.currentTaskId);
+        updateLocalRecord(taskId, data) {
+            const rec = State.dashboard.records.find(r => r.taskId === taskId);
+            if(rec) {
+                rec.status = data.status;
+                rec.currentStepIndex = data.currentStepIndex;
+                this.renderDashboardTable(); // 刷新表格
+
+                // 刷新抽屉
+                const drawer = document.getElementById('drawer');
+                if(drawer.classList.contains('open') && drawer.dataset.tid === taskId) {
+                    this.renderDrawerContent(rec);
+                }
             }
         },
 
-        renderButtonState() {
+        renderDashboardBtn() {
             const btn = document.getElementById('action-btn');
-            if (this.currentTaskId) {
+            if(!btn) return;
+            if(this.currentTaskId) {
                 btn.classList.add('running');
-                btn.innerHTML = `<svg class="spin" style="width:14px;margin-right:5px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> 执行中...`;
-                btn.onmouseenter = () => { btn.innerHTML = `⛔ 点击停止`; };
-                btn.onmouseleave = () => { btn.innerHTML = `<svg class="spin" style="width:14px;margin-right:5px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> 执行中...`; };
-                btn.onclick = () => this.manualStop();
+                btn.innerHTML = '⏳ 执行中...';
+                btn.onmouseenter = () => btn.innerHTML = '⛔ 点击停止';
+                btn.onmouseleave = () => btn.innerHTML = '⏳ 执行中...';
             } else {
                 btn.classList.remove('running');
-                btn.innerHTML = `<span>▶ 提交并执行</span>`;
-                btn.onmouseenter = null; btn.onmouseleave = null;
-                btn.onclick = () => this.startTask();
+                btn.innerHTML = '▶ 提交并执行';
+                btn.onmouseenter = null;
             }
         },
 
-        // --- 本地分页逻辑 ---
-        renderTable() {
-            const tbody = document.getElementById('current-record-body');
-            const { currentPage, pageSize } = this.pagination;
-            const start = (currentPage - 1) * pageSize;
-            const end = start + pageSize;
-            const pageData = this.records.slice(start, end);
-
-            if (pageData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#999;">暂无会话记录</td></tr>';
+        // --- 抽屉逻辑 ---
+        async openDrawer(taskId, fromServer = false) {
+            let record;
+            if(fromServer) {
+                // 如果是历史记录，需要重新查一下详情（为了获取步骤信息）
+                const res = await ApiService.pollStatus(taskId);
+                record = {
+                    taskId,
+                    status: res.status,
+                    currentStepIndex: res.currentStepIndex || 0,
+                    steps: res.steps || PageConfigs.dashboard.workflow, // 历史数据可能缺 workflow，用默认补
+                    formData: res.formData || {}
+                };
             } else {
-                tbody.innerHTML = pageData.map(r => this.createRowHtml(r)).join('');
+                record = State.dashboard.records.find(r => r.taskId === taskId);
             }
-            this.renderPaginationControls();
+
+            if(!record) return;
+
+            const drawer = document.getElementById('drawer');
+            drawer.dataset.tid = taskId;
+            this.renderDrawerContent(record);
+            document.getElementById('drawer-overlay').classList.add('open');
+            drawer.classList.add('open');
         },
 
-        renderPaginationControls() {
-            document.getElementById('local-total-count').textContent = this.records.length;
-            document.getElementById('local-current-page').textContent = this.pagination.currentPage;
-
-            const maxPage = Math.ceil(this.records.length / this.pagination.pageSize) || 1;
-            const btns = document.querySelectorAll('#local-pagination .page-btn');
-            btns[0].disabled = (this.pagination.currentPage <= 1);
-            btns[1].disabled = (this.pagination.currentPage >= maxPage);
+        closeDrawer() {
+            document.getElementById('drawer-overlay').classList.remove('open');
+            document.getElementById('drawer').classList.remove('open');
         },
 
-        prevPage() {
-            if (this.pagination.currentPage > 1) {
-                this.pagination.currentPage--;
-                this.renderTable();
-            }
+        renderDrawerContent(record) {
+            // 步骤条
+            const stepper = document.getElementById('drawer-stepper');
+            const total = record.steps.length;
+            stepper.innerHTML = record.steps.map((step, idx) => {
+                let cls = '';
+                if(record.status === 'SUCCESS' || idx < record.currentStepIndex) cls = 'finish';
+                else if(idx === record.currentStepIndex && record.status === 'PROCESSING') cls = 'active';
+
+                let lineStyle = (idx < total - 1 && (cls === 'finish' || (cls === 'active' && record.status==='SUCCESS')))
+                    ? 'background:#1677ff' : '';
+
+                return `<div class="step-item ${cls}">
+                    <div class="step-line" style="${lineStyle}"></div>
+                    <div class="step-dot"></div>
+                    <div class="step-title">${step.title}</div>
+                    <div class="step-user">${step.user||'系统'}</div>
+                </div>`;
+            }).join('');
+
+            // 信息网格
+            const grid = document.getElementById('drawer-info-grid');
+            const labels = {}; // 简单的 Label 映射
+            PageConfigs.dashboard.fields.forEach(f => labels[f.name] = f.label);
+
+            grid.innerHTML = Object.keys(record.formData).map(k => `
+                <div class="info-item">
+                    <div class="info-label">${labels[k]||k}：</div>
+                    <div class="info-value">${record.formData[k]}</div>
+                </div>
+            `).join('');
         },
 
-        nextPage() {
-            const maxPage = Math.ceil(this.records.length / this.pagination.pageSize);
-            if (this.pagination.currentPage < maxPage) {
-                this.pagination.currentPage++;
-                this.renderTable();
-            }
+        // 辅助：状态徽标
+        getStatusBadge(status) {
+            if(status === 'PROCESSING') return `<span class="status-badge status-processing">执行中</span>`;
+            if(status === 'SUCCESS') return `<span class="status-badge status-success">已完成</span>`;
+            return `<span class="status-badge status-stopped">已停止</span>`;
         },
 
-        createRowHtml(r) {
-            let statusBadge = '';
-            let currentNode = (r.steps && r.steps[r.currentStepIndex]) ? r.steps[r.currentStepIndex].title : '初始化...';
-
-            if (r.status === 'PROCESSING') statusBadge = `<span class="status-badge status-processing">执行中</span>`;
-            else if (r.status === 'SUCCESS') { statusBadge = `<span class="status-badge status-success">已完成</span>`; currentNode = '结束'; }
-            else statusBadge = `<span class="status-badge status-stopped">已停止</span>`;
-
-            const timeStr = new Date(r.startTime).toLocaleTimeString();
-
+        // 辅助：构建表格行
+        buildRow(r) {
+            let node = (r.steps && r.steps[r.currentStepIndex]) ? r.steps[r.currentStepIndex].title : '结束';
+            if(r.status === 'SUCCESS') node = '流程结束';
             return `<tr>
-                <td>${statusBadge}</td>
-                <td>${r.formData.name || r.displayInfo?.['用户姓名'] || '-'}</td>
-                <td>${timeStr}</td>
-                <td>${currentNode}</td>
-                <td><a href="javascript:;" onclick="openDrawer('${r.id}')" style="color:var(--primary); text-decoration:none;">查看详情</a></td>
+                <td>${this.getStatusBadge(r.status)}</td>
+                <td style="font-family:monospace">${r.taskId}</td>
+                <td>${r.formData.name}</td>
+                <td>${r.startTime.toLocaleTimeString()}</td>
+                <td>${node}</td>
+                <td><a href="javascript:;" onclick="App.openDrawer('${r.taskId}')" style="color:var(--primary)">详情</a></td>
             </tr>`;
         }
     };
 
-    // ================= 4. 历史记录管理器 (服务端分页) =================
-    const HistoryManager = {
-        currentPage: 1,
-        pageSize: 10,
-        total: 0,
-        data: [],
-
-        async loadData(page) {
-            this.currentPage = page || this.currentPage;
-            const keyword = document.getElementById('history-search').value;
-
-            const btn = document.querySelector('.search-btn');
-            const originalText = btn.textContent;
-            btn.textContent = '...'; btn.disabled = true;
-
-            try {
-                const res = await ApiService.getHistory(this.currentPage, this.pageSize, keyword);
-                if (res.code === 200) {
-                    this.data = res.data.items;
-                    this.total = res.data.total;
-                    this.renderTable();
-                    this.renderPagination();
-                }
-            } finally {
-                btn.textContent = originalText; btn.disabled = false;
-            }
-        },
-
-        changeSize(size) {
-            this.pageSize = parseInt(size);
-            this.loadData(1);
-        },
-
-        prevPage() {
-            if (this.currentPage > 1) this.loadData(this.currentPage - 1);
-        },
-
-        nextPage() {
-            const maxPage = Math.ceil(this.total / this.pageSize);
-            if (this.currentPage < maxPage) this.loadData(this.currentPage + 1);
-        },
-
-        renderTable() {
-            const tbody = document.getElementById('history-table-body');
-            if (this.data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;padding:20px;">暂无历史数据</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = this.data.map(r => {
-                let statusBadge = '';
-                if (r.status === 'PROCESSING') statusBadge = `<span class="status-badge status-processing">执行中</span>`;
-                else if (r.status === 'SUCCESS') statusBadge = `<span class="status-badge status-success">已完成</span>`;
-                else statusBadge = `<span class="status-badge status-stopped">已停止</span>`;
-
-                const name = r.displayInfo?.['用户姓名'] || r.data?.name || '-';
-                const amount = r.displayInfo?.['申请金额'] || r.data?.amount || '-';
-                // Python timestamp to Date
-                const timeStr = new Date(r.startTime * 1000).toLocaleString();
-
-                return `<tr>
-                    <td>${statusBadge}</td>
-                    <td style="font-family:monospace;">${r.taskId}</td>
-                    <td>${name}</td>
-                    <td>${amount}</td>
-                    <td style="color:#666;font-size:12px;">${timeStr}</td>
-                    <td><a href="javascript:;" onclick="openDrawer('${r.taskId}', true)" style="color:var(--primary); text-decoration:none;">查看详情</a></td>
-                </tr>`;
-            }).join('');
-        },
-
-        renderPagination() {
-            document.getElementById('total-count').textContent = this.total;
-            document.getElementById('current-page').textContent = this.currentPage;
-
-            const maxPage = Math.ceil(this.total / this.pageSize) || 1;
-            const btns = document.querySelectorAll('.pagination:not(#local-pagination) .page-btn');
-            btns[0].disabled = (this.currentPage <= 1);
-            btns[1].disabled = (this.currentPage >= maxPage);
-        }
-    };
-
-    // ================= 5. 详情抽屉 (通用) =================
-    async function openDrawer(recordId, fromHistory = false) {
-        let record;
-        if (fromHistory) {
-            // 历史记录需要查一次最新全量状态
-            const res = await ApiService.pollStatus(recordId);
-            if (res.code === 200) {
-                record = {
-                    status: res.status,
-                    steps: res.steps,
-                    currentStepIndex: res.currentStepIndex,
-                    displayInfo: res.displayInfo
-                };
-            } else {
-                alert('获取详情失败'); return;
-            }
-        } else {
-            record = DashboardManager.records.find(r => r.id === recordId);
-        }
-
-        if (!record) return;
-
-        const drawer = document.getElementById('drawer');
-        drawer.dataset.recordId = recordId;
-        renderDrawerContent(record);
-        document.getElementById('drawer-overlay').classList.add('open');
-        drawer.classList.add('open');
-    }
-
-    function closeDrawer() {
-        document.getElementById('drawer-overlay').classList.remove('open');
-        document.getElementById('drawer').classList.remove('open');
-        document.getElementById('drawer').dataset.recordId = '';
-    }
-
-    function renderDrawerContent(record) {
-        const stepperContainer = document.getElementById('drawer-stepper');
-        const infoGrid = document.getElementById('drawer-info-grid');
-
-        // 渲染进度条
-        if (!record.steps || record.steps.length === 0) {
-            stepperContainer.innerHTML = '<div style="text-align:center;width:100%;color:#999;padding:20px;">数据加载中...</div>';
-        } else {
-            const totalSteps = record.steps.length;
-            stepperContainer.innerHTML = record.steps.map((step, index) => {
-                let statusClass = '';
-                if (record.status === 'SUCCESS') {
-                    statusClass = 'finish';
-                } else {
-                    if (index < record.currentStepIndex) statusClass = 'finish';
-                    else if (index === record.currentStepIndex) statusClass = 'active';
-                }
-
-                let lineStyle = '';
-                if (index < totalSteps - 1) {
-                    const isLineActive = (index < record.currentStepIndex) || (record.status === 'SUCCESS');
-                    lineStyle = `background: ${isLineActive ? '#1677ff' : '#e8e8e8'}`;
-                }
-
-                return `
-                    <div class="step-item ${statusClass}">
-                        <div class="step-line" style="${lineStyle}"></div>
-                        <div class="step-dot"></div>
-                        <div class="step-title">${step.title}</div>
-                        <div class="step-user">${step.user}</div>
-                        <div class="step-time">${index <= record.currentStepIndex ? '已流转' : ''}</div>
-                    </div>`;
-            }).join('');
-        }
-
-        // 渲染详情键值对
-        if (!record.displayInfo) {
-            infoGrid.innerHTML = '';
-        } else {
-            infoGrid.innerHTML = Object.keys(record.displayInfo).map(key => {
-                return `<div class="info-item"><div class="info-label">${key}：</div><div class="info-value">${record.displayInfo[key]}</div></div>`;
-            }).join('');
-        }
-    }
-
-    // 启动
-    DashboardManager.init();
-
-    // 绑定全局动作
-    window.handleAction = () => {
-        if (DashboardManager.currentTaskId) DashboardManager.manualStop();
-        else DashboardManager.startTask();
-    };
-    window.switchView = switchView;
-    window.HistoryManager = HistoryManager;
-    window.DashboardManager = DashboardManager;
+    // 启动应用
+    App.init();
 
 </script>
 </body>
