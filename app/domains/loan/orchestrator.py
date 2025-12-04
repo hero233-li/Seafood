@@ -3,6 +3,8 @@ from app.core.engine import BaseWorkflowEngine
 from app.domains.loan import steps
 import time
 
+from app.domains.loan.steps import step_mock_customer
+
 
 class LoanOrchestrator(BaseWorkflowEngine):
 
@@ -15,6 +17,7 @@ class LoanOrchestrator(BaseWorkflowEngine):
 
         # === 阶段 1: 部门初审 ===
         self.check_stop()
+        step_mock_customer()
         self.update_ui_step(1)
 
         # 动作1: 风控

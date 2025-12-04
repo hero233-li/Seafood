@@ -1,0 +1,14 @@
+{
+  "userInfo": {
+    "id": "12345",
+    "role": "admin"
+  },
+  "deviceInfo": {
+    "os": "windows",
+    "version": "11"
+  },
+  "bizSettings": {
+    "mode": "advanced",
+    "filters": ["a", "b", "c"]
+  }
+}

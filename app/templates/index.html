@@ -122,7 +122,7 @@
 
     <div class="drawer-overlay" id="drawer-overlay" onclick="App.closeDrawer()"></div>
     <div class="drawer" id="drawer">
-        <div class="detail-header">
+        <div class="detail-header">åå
             <h3 style="margin-bottom: 24px; font-size: 16px; color:#333;">流程进度</h3>
             <div id="drawer-stepper" class="stepper"></div>
         </div>
@@ -154,7 +154,7 @@
                 { name: 'mobile', label: '联系方式', type: 'text', width: '30%', defaultValue: '18112345678' },
                 { name: 'address', label: '联系地址', type: 'text', width: '100%', defaultValue: '浙江省杭州市西湖区黄姑山路工专路交叉口' },
                 { name: 'amount', label: '申请金额', type: 'number', width: '30%', defaultValue: 50000 },
-                { name: 'terms', label: '分期期数', type: 'select', width: '30%', options: ['12期', '24期', '36期'] },
+                { name: 'terms', label: '分期期数', type: 'select', width: '30%', defaultValue:'12',options: ['12期', '24期', '36期'], },
                 { name: 'isUrgent', label: '加急处理', type: 'switch', width: '30%', defaultValue: true }
             ],
             workflow: [
@@ -241,25 +241,29 @@
 
     // ================= 3. API 服务层 (纯 Promise 封装) =================
     const ApiService = {
-        async submit(formData, workflow) {
-            return new Promise(resolve => setTimeout(() => resolve({ taskId: MockBackend.createTask(formData, workflow) }), 400));
+        async submit(formData) {
+            const res = await fetch('/api/loan/apply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            return await res.json();
         },
         async pollStatus(taskId) {
-            return new Promise(resolve => {
-                const task = MockBackend.queryTask(taskId);
-                resolve({ status: task?.status, currentStepIndex: task?.stepIndex, steps: task?.workflow, formData: task?.formData });
-            });
+            const res = await fetch(`/api/status?taskId=${taskId}`);
+            return await res.json();
         },
         async stop(taskId) {
-            return new Promise(resolve => { MockBackend.stopTask(taskId); resolve(true); });
-        },
-        async getHistory({ page, size, keyword }) {
-            return new Promise(resolve => {
-                setTimeout(() => {
-                    resolve(MockBackend.searchHistory(page, size, keyword));
-                }, 300); // 模拟网络延迟
+            await fetch('/api/stop', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ taskId })
             });
-        }
+        },
+        async getHistory(page, size, keyword) {
+            const res = await fetch(`/api/history?page=${page}&size=${size}&keyword=${encodeURIComponent(keyword)}`);
+            return await res.json();
+        },
     };
 
     // ================= 4. 全局状态管理 (State) =================

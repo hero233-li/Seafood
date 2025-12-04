@@ -1,0 +1,19 @@
+app:
+  env: dev
+  base_url: "http://127.0.0.1:9000"  # 替换成你的实际域名
+
+interfaces:
+  # 接口1：获取配置（模拟你的长请求）
+  get_app_config:
+    path: "/api/v1/app/config"
+    method: "POST"
+    payload_file: "complex_req.json"  # 指向 payloads 文件夹下的文件名
+    req_head_code: "1001"
+    desc: "获取全局配置信息"
+
+  # 接口2：简单登录（演示无文件模式）
+  login:
+    path: "/api/login"
+    method: "POST"
+    payload_file: null
+    req_head_code: "2002"
