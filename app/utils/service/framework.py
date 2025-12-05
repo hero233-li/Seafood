@@ -41,8 +41,15 @@ class ConfigLoader:
 
     def get_payload_path(self, filename: str) -> str:
         """获取 payload 文件的绝对路径"""
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        return os.path.join(base_dir, "payloads", filename)
+        # 获取当前文件的目录 (假设此文件在 app/core 下)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+
+        # 回退一层到 app 目录，然后进入 config/payloads
+        # 路径拼接逻辑：app/core -> app -> app/config/payloads
+        project_root = os.path.dirname(current_dir)
+        payload_path = os.path.join(project_root, "config", "payloads", filename)
+
+        return payload_path
 
 
 # --- HTTP 客户端 (含重试逻辑) ---

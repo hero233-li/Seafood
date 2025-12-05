@@ -17,7 +17,7 @@ class LoanOrchestrator(BaseWorkflowEngine):
 
         # === 阶段 1: 部门初审 ===
         self.check_stop()
-        step_mock_customer()
+        step_mock_customer(data)
         self.update_ui_step(1)
 
         # 动作1: 风控
