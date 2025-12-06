@@ -19,4 +19,4 @@ def step_finance_audit(data):
     bank_sys.create_loan_account("temp_id", data['amount'])
 
 def step_mock_customer(data):
-    return core_mock.create_customer_mock(data['name'], data['mobile'])
+    return core_mock.create_customer_mock(data['name'], data)

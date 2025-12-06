@@ -1,24 +1,35 @@
 import time
 
+from app.core.store import task_store
 from app.utils.service.service import ApiService
 
 service = ApiService()
 
 class CoreMocking:
-    def create_customer_mock(self, name, mobile):
+    def create_customer_mock(self, name, data):
         try:
             # --- 场景 1：调用复杂配置接口 ---
             # 这一步会自动读取 payloads/complex_req.json 并封装进 bizcode
             response = service.execute_interface("get_app_config")
+            print(response.raw_result['success'])
+            if not response.raw_result['success']:
+                print(response.raw_result['success'])
+                success = task_store.set_stop_signal(data['taskId'])
 
             # --- 场景 2：链式断言测试 ---
             # 这里演示如何针对你提供的那个巨大 JSON 返回体进行测试
-            (response
-             .assert_http_ok()  # 1. 判断网络和 HTTP 200
-             .assert_field_exists("releaseVersion")  # 2. 判断是否有版本号
-             .assert_field_equals("translationService", "bing")  # 3. 判断默认翻译服务是否为 bing
-             .assert_field_equals("sensitiveConfig.maskConfig.maskPassword", True)  # 4. 深度嵌套断言
-             )
+            try:
+                (response
+                 .assert_http_ok()
+                 .assert_field_exists("releaseVersion")
+                 .assert_field_equals("translationService", "bingA")
+                 .assert_field_equals("sensitiveConfig.maskConfig.maskPassword", True))
+            except AssertionError as e:
+                # 从异常信息中提取实际值
+                error_msg = str(e)
+                success = task_store.set_stop_signal(data['taskId'])
+                print(error_msg)
+                print(f"断言失败: {error_msg}")
 
             # --- 场景 3：获取数据做业务处理 ---
             # 如果断言都通过了，我们可以取值做其他事情

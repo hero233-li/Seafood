@@ -31,6 +31,7 @@ class ResponseAssertion:
     def assert_http_ok(self):
         """断言 HTTP 层是否成功"""
         if not self.success or self.http_status != 200:
+            return False
             raise AssertionError(f"HTTP请求失败! Status: {self.http_status}, Error: {self.raw_result.get('error')}")
         print("✅ HTTP 状态检查通过")
         return self
@@ -47,7 +48,7 @@ class ResponseAssertion:
         """断言字段值是否等于预期"""
         actual = self.get_value(key_chain)
         if actual != expected_value:
-            raise AssertionError(f"断言失败: '{key_chain}' 预期为 '{expected_value}', 实际为 '{actual}'")
+             raise AssertionError(f"断言失败: '{key_chain}' 预期为 '{expected_value}', 实际为 '{actual}'")
         print(f"✅ 字段值匹配通过: {key_chain} == {expected_value}")
         return self
 

@@ -89,6 +89,7 @@ class HttpClient:
 
             except requests.RequestException as e:
                 print(f"[Error] 网络请求异常: {e}")
+                return {'success': False, 'status': 500, 'data': {}, 'error': str(e)}
 
             # 如果失败，等待后重试
             if attempt < max_retries - 1:
